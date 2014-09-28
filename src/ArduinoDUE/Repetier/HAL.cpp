@@ -148,6 +148,19 @@ void HAL::analogStart(void)
 {
   uint32_t  adcEnable = 0;
 
+  #if (MOTHERBOARD == 500)
+    PIO_Configure(
+                  g_APinDescription[58].pPort,
+                  g_APinDescription[58].ulPinType,
+                  g_APinDescription[58].ulPin,
+                  g_APinDescription[58].ulPinConfiguration);
+    PIO_Configure(
+                  g_APinDescription[59].pPort,
+                  g_APinDescription[59].ulPinType,
+                  g_APinDescription[59].ulPin,
+                  g_APinDescription[59].ulPinConfiguration);
+#endif //(MOTHERBOARD == 500)
+
   // ensure we can write to ADC registers
   ADC->ADC_WPMR = ADC_WPMR_WPKEY(0);
   pmc_enable_periph_clk(ID_ADC);  // enable adc clock
@@ -174,6 +187,16 @@ void HAL::analogStart(void)
   // set prescaler rate  MCK/((PRESCALE+1) * 2)
   // set tracking time  (TRACKTIM+1) * clock periods
   // set transfer period  (TRANSFER * 2 + 3) 
+  
+  #if (ANALOG_INPUT_BITS == 12)
+    ADC->ADC_MR = ADC_MR_TRGEN_DIS | ADC_MR_TRGSEL_ADC_TRIG0 | ADC_MR_LOWRES_BITS_12 |
+        ADC_MR_SLEEP_NORMAL | ADC_MR_FWUP_OFF | ADC_MR_FREERUN_OFF |
+            ADC_MR_STARTUP_SUT64 | ADC_MR_SETTLING_AST17 | ADC_MR_ANACH_NONE |
+                ADC_MR_USEQ_NUM_ORDER |
+                    ADC_MR_PRESCAL(AD_PRESCALE_FACTOR) |
+                        ADC_MR_TRACKTIM(AD_TRACKING_CYCLES) |
+                            ADC_MR_TRANSFER(AD_TRANSFER_CYCLES);
+#else
   ADC->ADC_MR = ADC_MR_TRGEN_DIS | ADC_MR_TRGSEL_ADC_TRIG0 | ADC_MR_LOWRES_BITS_10 |
             ADC_MR_SLEEP_NORMAL | ADC_MR_FWUP_OFF | ADC_MR_FREERUN_OFF |
             ADC_MR_STARTUP_SUT64 | ADC_MR_SETTLING_AST17 | ADC_MR_ANACH_NONE |
@@ -181,6 +204,7 @@ void HAL::analogStart(void)
             ADC_MR_PRESCAL(AD_PRESCALE_FACTOR) |
             ADC_MR_TRACKTIM(AD_TRACKING_CYCLES) |
             ADC_MR_TRANSFER(AD_TRANSFER_CYCLES);
+#endif//(ANALOG_INPUT_BITS == 12)
 
   ADC->ADC_IER = 0;             // no ADC interrupts
   ADC->ADC_CGR = 0;             // Gain = 1
@@ -230,70 +254,138 @@ void HAL::resetHardware() {
 
 #ifndef DUE_SOFTWARE_SPI
    // hardware SPI
+   bool spiInitMaded = false;
    void HAL::spiBegin()
    {
-        // Configre SPI pins
-        PIO_Configure(
-           g_APinDescription[SCK_PIN].pPort,
-           g_APinDescription[SCK_PIN].ulPinType,
-           g_APinDescription[SCK_PIN].ulPin,
-           g_APinDescription[SCK_PIN].ulPinConfiguration);
-        PIO_Configure(
-           g_APinDescription[MOSI_PIN].pPort,
-           g_APinDescription[MOSI_PIN].ulPinType,
-           g_APinDescription[MOSI_PIN].ulPin,
-           g_APinDescription[MOSI_PIN].ulPinConfiguration);
-        PIO_Configure(
-           g_APinDescription[MISO_PIN].pPort,
-           g_APinDescription[MISO_PIN].ulPinType,
-           g_APinDescription[MISO_PIN].ulPin,
-           g_APinDescription[MISO_PIN].ulPinConfiguration);
+       if(spiInitMaded == false)
+		{
+			// Configre SPI pins
+			PIO_Configure(
+			   g_APinDescription[SCK_PIN].pPort,
+			   g_APinDescription[SCK_PIN].ulPinType,
+			   g_APinDescription[SCK_PIN].ulPin,
+			   g_APinDescription[SCK_PIN].ulPinConfiguration);
+			PIO_Configure(
+			   g_APinDescription[MOSI_PIN].pPort,
+			   g_APinDescription[MOSI_PIN].ulPinType,
+			   g_APinDescription[MOSI_PIN].ulPin,
+			   g_APinDescription[MOSI_PIN].ulPinConfiguration);
+			PIO_Configure(
+			   g_APinDescription[MISO_PIN].pPort,
+			   g_APinDescription[MISO_PIN].ulPinType,
+			   g_APinDescription[MISO_PIN].ulPin,
+			   g_APinDescription[MISO_PIN].ulPinConfiguration);
 
-        // set master mode, peripheral select, fault detection
-        SPI_Configure(SPI0, ID_SPI0, SPI_MR_MSTR | 
-                     SPI_MR_MODFDIS | SPI_MR_PS);
-       SPI_Enable(SPI0);
-        PIO_Configure(
-           g_APinDescription[SPI_PIN].pPort,
-           g_APinDescription[SPI_PIN].ulPinType,
-           g_APinDescription[SPI_PIN].ulPin,
-           g_APinDescription[SPI_PIN].ulPinConfiguration);
-        spiInit(1);
+			// set master mode, peripheral select, fault detection
+			SPI_Configure(SPI0, ID_SPI0, SPI_MR_MSTR | 
+						 SPI_MR_MODFDIS | SPI_MR_PS);
+		   SPI_Enable(SPI0);
+		   
+	#if (MOTHERBOARD == 500)
+			pinMode( DAC_SYNC, OUTPUT);
+			pinMode( SPI_EEPROM1_CS, OUTPUT);
+			pinMode( SPI_EEPROM2_CS, OUTPUT);
+			pinMode( SPI_FLASH_CS, OUTPUT);
+			//pinMode( SPI_PIN, OUTPUT);
+			digitalWrite( DAC_SYNC , HIGH );
+			digitalWrite( SPI_EEPROM1_CS , HIGH );
+			digitalWrite( SPI_EEPROM2_CS , HIGH );
+			digitalWrite( SPI_FLASH_CS , HIGH );
+			digitalWrite( SDSS , HIGH );
+			//pinMode( SPI_PIN, OUTPUT);
+	#endif//(MOTHERBOARD == 500)
+
+			PIO_Configure(
+			   g_APinDescription[SPI_PIN].pPort,
+			   g_APinDescription[SPI_PIN].ulPinType,
+			   g_APinDescription[SPI_PIN].ulPin,
+			   g_APinDescription[SPI_PIN].ulPinConfiguration);
+			spiInit(1);
+			spiInitMaded = true;
+		}
    }
    // spiClock is 0 to 6, relecting AVR clock dividers 2,4,8,16,32,64,128
    // Due can only go as slow as AVR divider 32 -- slowest Due clock is 329,412 Hz
     void HAL::spiInit(uint8_t spiClock) 
    {
-        if(spiClock>4) spiClock = 1;
-        // Set SPI mode 0, clock, select not active after transfer, with delay between transfers
-        SPI_ConfigureNPCS(SPI0, SPI_CHAN, SPI_CSR_NCPHA |
-                         SPI_CSR_CSAAT | SPI_CSR_SCBR(spiDueDividors[spiClock]) | 
-                         SPI_CSR_DLYBCT(1));
-       SPI_Enable(SPI0);
+       if(spiInitMaded == false)
+		{
+			if(spiClock>4) spiClock = 1;
+	#if (MOTHERBOARD == 500)  
+			// Set SPI mode 1, clock, select not active after transfer, with delay between transfers  
+			SPI_ConfigureNPCS(SPI0, SPI_CHAN_DAC,
+							  SPI_CSR_CSAAT | SPI_CSR_SCBR(spiDueDividors[spiClock]) | 
+								  SPI_CSR_DLYBCT(1));
+			// Set SPI mode 0, clock, select not active after transfer, with delay between transfers 
+			SPI_ConfigureNPCS(SPI0, SPI_CHAN_EEPROM1,SPI_CSR_NCPHA|
+							  SPI_CSR_CSAAT | SPI_CSR_SCBR(spiDueDividors[spiClock]) | 
+								  SPI_CSR_DLYBCT(1));
+	#endif//(MOTHERBOARD == 500) 
+
+			// Set SPI mode 0, clock, select not active after transfer, with delay between transfers
+			SPI_ConfigureNPCS(SPI0, SPI_CHAN, SPI_CSR_NCPHA |
+							 SPI_CSR_CSAAT | SPI_CSR_SCBR(spiDueDividors[spiClock]) | 
+							 SPI_CSR_DLYBCT(1));
+		   SPI_Enable(SPI0);
+		   spiInitMaded = true;
+		}
    }
     // Write single byte to SPI
    void HAL::spiSend(byte b) {
-        // wait for transmit register empty
-        while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
-        // write byte with address and end transmission flag
-        SPI0->SPI_TDR = (uint32_t)b | SPI_PCS(SPI_CHAN) | SPI_TDR_LASTXFER;
-        // wait for receive register 
-        while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
-        // clear status
-        SPI0->SPI_RDR;
+    uint8_t dummy_read = 0;
+    // wait for transmit register empty
+    while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
+    // write byte with address and end transmission flag
+    SPI0->SPI_TDR = (uint32_t)b | SPI_PCS(SPI_CHAN) | SPI_TDR_LASTXFER;
+    // wait for receive register 
+    while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
+    // clear status
+    while ((SPI0->SPI_SR & SPI_SR_RDRF) == 1)
+          dummy_read = SPI0->SPI_RDR;
     }
+	
+	void HAL::spiSend(uint32_t chan, byte b) {
+		uint8_t dummy_read = 0;
+		// wait for transmit register empty
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
+		// write byte with address and end transmission flag
+		SPI0->SPI_TDR = (uint32_t)b | SPI_PCS(chan) | SPI_TDR_LASTXFER;
+		// wait for receive register 
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
+		// clear status
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 1)
+			  dummy_read = SPI0->SPI_RDR;
+	}
+
    void HAL::spiSend(const uint8_t* buf , size_t n)
    {
-       if (n == 0) return;
-       for (int i=0; i<n-1; i++)
-       {
-           while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
-           SPI0->SPI_TDR = (uint32_t)buf[i] | SPI_PCS(SPI_CHAN);
-           while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
-           SPI0->SPI_RDR;
-       }
-       spiSend(buf[n-1]);
+    uint8_t dummy_read = 0;
+    if (n == 0) return;
+    for (int i=0; i<n-1; i++)
+    {
+        while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
+        SPI0->SPI_TDR = (uint32_t)buf[i] | SPI_PCS(SPI_CHAN);
+        while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
+        while ((SPI0->SPI_SR & SPI_SR_RDRF) == 1)
+          dummy_read = SPI0->SPI_RDR;
+    }
+    spiSend(buf[n-1]);
    }
+
+	void HAL::spiSend(uint32_t chan ,const uint8_t* buf , size_t n)
+	{
+		uint8_t dummy_read = 0;
+		if (n == 0) return;
+		for (int i=0; i<n-1; i++)
+		{
+			while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
+			SPI0->SPI_TDR = (uint32_t)buf[i] | SPI_PCS(chan);
+			while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
+		   while ((SPI0->SPI_SR & SPI_SR_RDRF) == 1)
+			  dummy_read = SPI0->SPI_RDR;
+		}
+		spiSend(chan, buf[n-1]);
+	}
 
     // Read single byte from SPI
    uint8_t HAL::spiReceive()
@@ -322,6 +414,23 @@ void HAL::resetHardware() {
         }
        buf[nbyte] = spiReceive();
    }
+
+   uint8_t HAL::spiReceive(uint32_t chan)
+	{
+		uint8_t spirec_tmp;
+		// wait for transmit register empty
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0);
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 1)
+			spirec_tmp =  SPI0->SPI_RDR;
+		
+		// write dummy byte with address and end transmission flag
+		SPI0->SPI_TDR = 0x000000FF | SPI_PCS(chan) | SPI_TDR_LASTXFER;
+		
+		// wait for receive register 
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0);
+		// get byte from receive register
+		return SPI0->SPI_RDR;
+	}
 
     // Write from buffer to SPI
 

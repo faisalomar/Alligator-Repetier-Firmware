@@ -96,6 +96,7 @@ public:
     static long realDeltaPositionSteps[3];
     static int16_t travelMovesPerSecond;
     static int16_t printMovesPerSecond;
+    static bool IrregularPrintShapeCheck(int x,int y);
 #endif
 #if FEATURE_Z_PROBE || MAX_HARDWARE_ENDSTOP_Z || NONLINEAR_SYSTEM
     static long stepsRemainingAtZHit;

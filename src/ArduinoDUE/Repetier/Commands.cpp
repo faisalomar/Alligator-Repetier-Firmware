@@ -327,6 +327,25 @@ void motorCurrentControlInit() //Initialize LTC2600 Motor Current
 }
 #endif
 
+#if STEPPER_CURRENT_CONTROL==CURRENT_CONTROL_DAC
+// DAC methods for controling current and microstepping
+void setMotorCurrent(uint8_t driver, unsigned int current)
+{
+    if(driver>=4)
+        return;
+    
+    ExternalDac::setValue(driver, current);
+}
+
+void motorCurrentControlInit() //Initialize Digipot Motor Current
+{
+    const uint8_t digipot_motor_current[] = MOTOR_CURRENT;
+    
+    for(int i=0; i<=4; i++)
+        setMotorCurrent(i,digipot_motor_current[i]);
+}
+#endif
+
 #if defined(X_MS1_PIN) && X_MS1_PIN > -1
 void microstepMS(uint8_t driver, int8_t ms1, int8_t ms2)
 {

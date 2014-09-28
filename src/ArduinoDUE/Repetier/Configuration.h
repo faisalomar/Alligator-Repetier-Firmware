@@ -53,8 +53,9 @@ To override EEPROM settings with config settings, set EEPROM_MODE 0
 // Arduino Due with RADDS       = 402
 // Arduino Due with RAMPS-FD    = 403
 // Arduino Due with RAMPS-FD V2 = 404
+// Alligator Board rev1 = 500
 
-#define MOTHERBOARD 402
+#define MOTHERBOARD 500
 
 #include "pins.h"
 
@@ -100,7 +101,7 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
       /** \brief Pitch in mm of drive belt. GT2 = 2mm */
       #define BELT_PITCH 2
       /** \brief Number of teeth on X, Y and Z tower pulleys */
-      #define PULLEY_TEETH 20
+      #define PULLEY_TEETH 16
       #define PULLEY_CIRCUMFERENCE (BELT_PITCH * PULLEY_TEETH)
     #elif DELTA_DRIVE_TYPE == 1
       /** \brief Filament pulley diameter in milimeters */
@@ -109,10 +110,10 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
     #endif
 
     /** \brief Steps per rotation of stepper motor */
-    #define STEPS_PER_ROTATION 200
+    #define STEPS_PER_ROTATION 400
 
     /** \brief Micro stepping rate of X, Y and Y tower stepper drivers */
-    #define MICRO_STEPS 16
+    #define MICRO_STEPS 32
 
     // Calculations
     #define AXIS_STEPS_PER_MM ((float)(MICRO_STEPS * STEPS_PER_ROTATION) / PULLEY_CIRCUMFERENCE)
@@ -147,7 +148,7 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 #define EXT0_X_OFFSET 0
 #define EXT0_Y_OFFSET 0
 // for skeinforge 40 and later, steps to pull the plasic 1 mm inside the extruder, not out.  Overridden if EEPROM activated.
-#define EXT0_STEPS_PER_MM 106 //425 // 825.698 //457 
+#define EXT0_STEPS_PER_MM 501 //425 // 825.698 //457 
 // What type of sensor is used?
 // 1 is 100k thermistor (Epcos B57560G0107F000 - RepRap-Fab.org and many other)
 // 2 is 200k thermistor
@@ -167,7 +168,7 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 // 100 is AD595
 // 101 is MAX6675
 // 102 is MAX31855
-#define EXT0_TEMPSENSOR_TYPE 1
+#define EXT0_TEMPSENSOR_TYPE 97
 // Analog input pin for reading temperatures or pin enabling SS for MAX6675
 #define EXT0_TEMPSENSOR_PIN TEMP_0_PIN
 // Which pin enables the heater
@@ -175,7 +176,7 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 #define EXT0_STEP_PIN E0_STEP_PIN
 #define EXT0_DIR_PIN E0_DIR_PIN
 // set to false/true for normal / inverse direction
-#define EXT0_INVERSE false
+#define EXT0_INVERSE true
 #define EXT0_ENABLE_PIN E0_ENABLE_PIN
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define EXT0_ENABLE_ON false
@@ -186,10 +187,10 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 #define EXT0_MAX_FEEDRATE 50
 // Feedrate from halted extruder in mm/s
 //  Overridden if EEPROM activated.
-#define EXT0_MAX_START_FEEDRATE 40
+#define EXT0_MAX_START_FEEDRATE 45
 // Acceleration in mm/s^2
 //  Overridden if EEPROM activated.
-#define EXT0_MAX_ACCELERATION 10000
+#define EXT0_MAX_ACCELERATION 1000
 /** Type of heat manager for this extruder.
 - 0 = Simply switch on/off if temperature is reached. Works always.
 - 1 = PID Temperature control. Is better but needs good PID values. Defaults are a good start for most extruder.
@@ -387,13 +388,13 @@ If your EXT0_PID_MAX is low, you should prefer the second method.
 */
 #define SCALE_PID_TO_MAX 0
 
-#define HEATER_PWM_SPEED 1 // How fast ist pwm signal 0 = 15.25Hz, 1 = 30.51Hz, 2 = 61.03Hz, 3 = 122.06Hz
+#define HEATER_PWM_SPEED 0 // How fast ist pwm signal 0 = 15.25Hz, 1 = 30.51Hz, 2 = 61.03Hz, 3 = 122.06Hz
 
 /** Temperature range for target temperature to hold in M109 command. 5 means +/-5 degC
 
 Uncomment define to force the temperature into the range for given watchperiod.
 */
-//#define TEMP_HYSTERESIS 5
+#define TEMP_HYSTERESIS 2
 
 /** Userdefined thermistor table
 
@@ -447,7 +448,7 @@ The capacitor is for reducing noise from long thermistor cable. If you don't hav
 
 If you need the generic table, uncomment the following define.
 */
-//#define USE_GENERIC_THERMISTORTABLE_1
+#define USE_GENERIC_THERMISTORTABLE_1
 
 /* Some examples for different thermistors:
 
@@ -467,13 +468,13 @@ Honeywell 100K Thermistor (135-104LAG-J01)  : R0 = 100000  T0 = 25  Beta = 3974
 You can use the beta from the datasheet or compute it yourself.
 See http://reprap.org/wiki/MeasuringThermistorBeta for more details.
 */
-#define GENERIC_THERM1_BETA 4036
+#define GENERIC_THERM1_BETA 3950
 /** Start temperature for generated thermistor table */
 #define GENERIC_THERM1_MIN_TEMP -20
 /** End Temperature for generated thermistor table */
 #define GENERIC_THERM1_MAX_TEMP 300
 #define GENERIC_THERM1_R1 0
-#define GENERIC_THERM1_R2 4700
+#define GENERIC_THERM1_R2 4400
 
 // The same for table 2 and 3 if needed
 
@@ -484,7 +485,7 @@ See http://reprap.org/wiki/MeasuringThermistorBeta for more details.
 #define GENERIC_THERM2_MIN_TEMP -20
 #define GENERIC_THERM2_MAX_TEMP 300
 #define GENERIC_THERM2_R1 0
-#define GENERIC_THERM2_R2 4700
+#define GENERIC_THERM2_R2 4400
 
 //#define USE_GENERIC_THERMISTORTABLE_3
 #define GENERIC_THERM3_T0 170
@@ -493,10 +494,10 @@ See http://reprap.org/wiki/MeasuringThermistorBeta for more details.
 #define GENERIC_THERM3_MIN_TEMP -20
 #define GENERIC_THERM3_MAX_TEMP 300
 #define GENERIC_THERM3_R1 0
-#define GENERIC_THERM3_R2 4700
+#define GENERIC_THERM3_R2 4400
 
 /** Supply voltage to ADC, can be changed by setting ANALOG_REF below to different value. */
-#define GENERIC_THERM_VREF 5
+#define GENERIC_THERM_VREF 3.3
 /** Number of entries in generated table. One entry takes 4 bytes. Higher number of entries increase computation time too.
 Value is used for all generic tables created. */
 #define GENERIC_THERM_NUM_ENTRIES 33
@@ -509,7 +510,7 @@ Value is used for all generic tables created. */
 // ############# Heated bed configuration ########################
 
 /** \brief Set true if you have a heated bed conected to your board, false if not */
-#define HAVE_HEATED_BED false
+#define HAVE_HEATED_BED true
 
 #define HEATED_BED_MAX_TEMP 120
 /** Skip M190 wait, if heated bed is already within x degrees. Fixed numbers only, 0 = off. */
@@ -583,9 +584,9 @@ on this endstop.
 #define ENDSTOP_X_MIN_INVERTING false
 #define ENDSTOP_Y_MIN_INVERTING false
 #define ENDSTOP_Z_MIN_INVERTING false
-#define ENDSTOP_X_MAX_INVERTING true
-#define ENDSTOP_Y_MAX_INVERTING true
-#define ENDSTOP_Z_MAX_INVERTING true
+#define ENDSTOP_X_MAX_INVERTING false
+#define ENDSTOP_Y_MAX_INVERTING false
+#define ENDSTOP_Z_MAX_INVERTING false
 
 // Set the values true where you have a hardware endstop. The Pin number is taken from pins.h.
 
@@ -615,9 +616,9 @@ on this endstop.
 #define DISABLE_E false
 
 // Inverting axis direction
-#define INVERT_X_DIR false
-#define INVERT_Y_DIR false
-#define INVERT_Z_DIR false
+#define INVERT_X_DIR true
+#define INVERT_Y_DIR true
+#define INVERT_Z_DIR true
 
 //// ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
@@ -639,9 +640,9 @@ on this endstop.
 #define max_software_endstop_z true
 
 // If during homing the endstop is reached, ho many mm should the printer move back for the second try
-#define ENDSTOP_X_BACK_MOVE 5
-#define ENDSTOP_Y_BACK_MOVE 5
-#define ENDSTOP_Z_BACK_MOVE 5
+#define ENDSTOP_X_BACK_MOVE 8
+#define ENDSTOP_Y_BACK_MOVE 8
+#define ENDSTOP_Z_BACK_MOVE 8
 
 // For higher precision you can reduce the speed for the second test on the endstop
 // during homing operation. The homing speed is divided by the value. 1 = same speed, 2 = half speed
@@ -664,9 +665,9 @@ on this endstop.
 // For delta robot Z_MAX_LENGTH is the maximum travel of the towers and should be set to the distance between the hotend
 // and the platform when the printer is at its home position.
 // If EEPROM is enabled these values will be overidden with the values in the EEPROM
-#define X_MAX_LENGTH 200
-#define Y_MAX_LENGTH 200
-#define Z_MAX_LENGTH 585.16
+#define X_MAX_LENGTH 394
+#define Y_MAX_LENGTH 394
+#define Z_MAX_LENGTH 394
 
 // Coordinates for the minimum axis. Can also be negative if you want to have the bed start at 0 and the printer can go to the left side
 // of the bed. Maximum coordinate is given by adding the above X_MAX_LENGTH values.
@@ -686,18 +687,20 @@ on this endstop.
 #define MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 #elif MOTHERBOARD==12
 #define MOTOR_CURRENT {35713,35713,35713,35713,35713} // Values 0-65535 (3D Master 35713 = ~1A)
+#elif MOTHERBOARD==500
+#define MOTOR_CURRENT {52,52,52,52} // Values 0-255 (Alligator 255 = ~2.5A)
 #endif
 
 /** \brief Number of segments to generate for delta conversions per second of move
 */
-#define DELTA_SEGMENTS_PER_SECOND_PRINT 180 // Move accurate setting for print moves
-#define DELTA_SEGMENTS_PER_SECOND_MOVE 70 // Less accurate setting for other moves
+#define DELTA_SEGMENTS_PER_SECOND_PRINT 600 // Move accurate setting for print moves
+#define DELTA_SEGMENTS_PER_SECOND_MOVE 100 // Less accurate setting for other moves
 
 // Delta settings
 #if DRIVE_SYSTEM==3
 /** \brief Delta rod length
 */
-#define DELTA_DIAGONAL_ROD 345 // mm
+#define DELTA_DIAGONAL_ROD 297 // mm
 
 
 /*  =========== Parameter essential for delta calibration ===================
@@ -733,20 +736,31 @@ on this endstop.
 #define DELTA_DIAGONAL_CORRECTION_B 0
 #define DELTA_DIAGONAL_CORRECTION_C 0
 
+/** Irregular bed **/
+// Plate with an irregular shape. 
+// Set the number of vertices and the coordinates.
+#define IRREGULAR_PRINTSHAPE
+
+#ifdef IRREGULAR_PRINTSHAPE
+#define PRINTSHAPE_VERTEX 6
+#define PRINTSHAPE_VERTEX_X { -102.64,102.64,134.39,31.75,-31.75,-134.39 }
+#define PRINTSHAPE_VERTEX_Y {-95.92,-95.92,-40.92,136.85,136.85,-40.92 }
+#endif
+
 /** Max. radius the printer should be able to reach. */
 #define DELTA_MAX_RADIUS 200
 
 /** \brief Horizontal offset of the universal joints on the end effector (moving platform).
 */
-#define END_EFFECTOR_HORIZONTAL_OFFSET 33
+#define END_EFFECTOR_HORIZONTAL_OFFSET 28
 
 /** \brief Horizontal offset of the universal joints on the vertical carriages.
 */
-#define CARRIAGE_HORIZONTAL_OFFSET 23
+#define CARRIAGE_HORIZONTAL_OFFSET 11.6
 
 /** \brief Printer radius in mm, measured from the center of the print area to the vertical smooth rod.
 */
-#define PRINTER_RADIUS 265.25
+#define PRINTER_RADIUS 211.32
 
 /**  \brief Horizontal distance bridged by the diagonal push rod when the end effector is in the center. It is pretty close to 50% of the push rod length (250 mm).
 */
@@ -779,7 +793,7 @@ you can also change the values online and autoleveling will store the results he
 Increasing this figure can use a lot of memory since 7 bytes * size of line buffer * MAX_SELTA_SEGMENTS_PER_LINE
 will be allocated for the delta buffer. With defaults 7 * 16 * 22 = 2464 bytes. This leaves ~1K free RAM on an Arduino
 Mega. Used only for nonlinear systems like delta or tuga. */
-#define MAX_DELTA_SEGMENTS_PER_LINE 22
+#define MAX_DELTA_SEGMENTS_PER_LINE 150
 
 /** After x seconds of inactivity, the stepper motors are disabled.
     Set to 0 to leave them enabled.
@@ -832,7 +846,7 @@ This is like reducing your 1/16th microstepping to 1/8 or 1/4. It is much cheape
 additional stepper interrupts with all it's overhead. As a result you can go as high as
 40000Hz.
 */
-#define STEP_DOUBLER_FREQUENCY 12000
+#define STEP_DOUBLER_FREQUENCY 120000
 /** If you need frequencies off more then 30000 you definitely need to enable this. If you have only 1/8 stepping
 enabling this may cause to stall your moves when 20000Hz is reached.
 */
@@ -887,7 +901,7 @@ Corner can be printed with full speed of 50 mm/s
 Overridden if EEPROM activated.
 */
 #define MAX_JERK 20.0
-#define MAX_ZJERK 0.3
+#define MAX_ZJERK 20.0
 
 /** \brief Number of moves we can cache in advance.
 
@@ -1151,7 +1165,7 @@ The following settings override uiconfig.h!
 10 = Gadgets3D shield on RAMPS 1.4, see http://reprap.org/wiki/RAMPS_1.3/1.4_GADGETS3D_Shield_with_Panel
 11 = RepRapDiscount Full Graphic Smart Controller
 */
-#define FEATURE_CONTROLLER 7
+#define FEATURE_CONTROLLER 0
 
 /**
 Select the language to use.
@@ -1165,7 +1179,7 @@ Select the language to use.
 7 = French
 8 = Czech
 */
-#define UI_LANGUAGE 1
+#define UI_LANGUAGE 0
 
 // This is line 2 of the status display at startup. Change to your like.
 #define UI_PRINTER_NAME "Ordbot"

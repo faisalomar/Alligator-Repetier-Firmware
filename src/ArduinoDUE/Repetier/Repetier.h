@@ -473,4 +473,8 @@ extern int debugWaitLoop;
 #include "Commands.h"
 #include "Eeprom.h"
 
+#if (MOTHERBOARD == 500)
+#include "ExternalDac.h"
+#endif 
+
 #endif

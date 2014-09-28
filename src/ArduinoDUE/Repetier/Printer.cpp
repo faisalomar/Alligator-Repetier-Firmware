@@ -155,7 +155,25 @@ int8_t Printer::motorY;
 int debugWaitLoop = 0;
 #endif
 
-
+#ifdef IRREGULAR_PRINTSHAPE
+bool IrregularPrintShapeCheck(int x,int y) {
+  
+    uint8_t  polySides = PRINTSHAPE_VERTEX;
+    float polyX[] = PRINTSHAPE_VERTEX_X;
+    float polyY[] = PRINTSHAPE_VERTEX_Y;
+    int   i, j=polySides-1 ;
+    bool  oddNodes=false;
+    for (i=0; i<polySides; i++) {
+        if ((polyY[i]< y && polyY[j]>=y
+            ||   polyY[j]< y && polyY[i]>=y)
+            &&  (polyX[i]<=x || polyX[j]<=x)) {  
+            oddNodes^=(polyX[i]+(y-polyY[i])/(polyY[j]-polyY[i])*(polyX[j]-polyX[i])<x); 
+        }
+        j=i; 
+    }
+return oddNodes;
+}
+#endif
 
 void Printer::constrainDestinationCoords()
 {
@@ -185,7 +203,11 @@ bool Printer::isPositionAllowed(float x,float y,float z) {
     bool allowed = true;
 #if DRIVE_SYSTEM == 3
     allowed &= (z >= 0) && (z <= zLength+0.05+ENDSTOP_Z_BACK_ON_HOME);
+  #ifdef IRREGULAR_PRINTSHAPE
+    allowed &= IrregularPrintShapeCheck(x,y);
+  #else
     allowed &= (x * x + y * y <= deltaMaxRadiusSquared);
+  #endif
 #endif // DRIVE_SYSTEM
     if(!allowed) {
         Printer::updateCurrentPosition(true);
@@ -509,6 +531,7 @@ void Printer::setup()
     HAL::delayMilliseconds(100);
 #endif // FEATURE_CONTROLLER
     //HAL::delayMilliseconds(500);  // add a delay at startup to give hardware time for initalization
+	HAL::spiBegin();
     HAL::hwSetup();
 #ifdef ANALYZER
 // Channel->pin assignments
@@ -555,6 +578,10 @@ void Printer::setup()
 #endif
 
     //Initialize Step Pins
+#if (MOTHERBOARD == 500)
+    SET_OUTPUT(ORIG_ENABLE_PIN);
+    digitalWrite( ORIG_ENABLE_PIN , LOW );
+#endif 
     SET_OUTPUT(X_STEP_PIN);
     SET_OUTPUT(Y_STEP_PIN);
     SET_OUTPUT(Z_STEP_PIN);
@@ -743,6 +770,11 @@ void Printer::setup()
 #endif
 
 #if STEPPER_CURRENT_CONTROL!=CURRENT_CONTROL_MANUAL
+
+#if (MOTHERBOARD == 500)
+    ExternalDac::begin();
+#endif//(MOTHERBOARD == 500)
+
     motorCurrentControlInit(); // Set current if it is firmware controlled
 #endif
     microstepInit();
@@ -787,6 +819,12 @@ void Printer::setup()
 #if defined(USE_ADVANCE)
     extruderStepsNeeded = 0;
 #endif
+
+#if(MOTHERBOARD == 500)
+    pinMode( HEATER_0_PIN, OUTPUT);
+    pinMode( HEATER_1_PIN, OUTPUT);
+#endif//(MOTHERBOARD == 500)
+
     EEPROM::initBaudrate();
     HAL::serialSetBaudrate(baudrate);
     Com::printFLN(Com::tStart);
@@ -812,6 +850,10 @@ void Printer::setup()
 #if FEATURE_WATCHDOG
     HAL::startWatchdog();
 #endif // FEATURE_WATCHDOG
+
+#if (MOTHERBOARD == 500)
+    pinMode (DAC_SYNC, OUTPUT);
+#endif //(MOTHERBOARD == 500)
 }
 
 void Printer::defaultLoopActions()
