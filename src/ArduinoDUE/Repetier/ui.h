@@ -357,13 +357,16 @@ extern const int8_t encoder_table[16] PROGMEM ;
 #define UI_MENU(name,items,itemsCnt) const UIMenuEntry * const name ## _entries[] PROGMEM = items;const UIMenu name PROGMEM = {2,0,itemsCnt,name ## _entries};
 #define UI_MENU_FILESELECT(name,items,itemsCnt) const UIMenuEntry * const name ## _entries[] PROGMEM = items;const UIMenu name PROGMEM = {1,0,itemsCnt,name ## _entries};
 
-#if FEATURE_CONTROLLER == CONTROLLER_SMARTRAMPS || FEATURE_CONTROLLER == CONTROLLER_GADGETS3D_SHIELD || FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD
+#if FEATURE_CONTROLLER == CONTROLLER_SMARTRAMPS || FEATURE_CONTROLLER == CONTROLLER_GADGETS3D_SHIELD || FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD || FEATURE_CONTROLLER == CONTROLLER_ALLIGATOR_GLCD
+
+#if MOTHERBOARD!=501
 #undef SDCARDDETECT
 #define SDCARDDETECT 49
 #undef SDCARDDETECTINVERTED
 #define SDCARDDETECTINVERTED 0
 #undef SDSUPPORT
 #define SDSUPPORT 1
+#endif
 #endif
 
 #if  FEATURE_CONTROLLER == CONTROLLER_RAMBO
@@ -469,10 +472,10 @@ inline void uiCheckSlowEncoder() {}
 void uiCheckSlowKeys(int &action) {}
 #endif // UI_MAIN
 #endif // NO_CONTROLLER
-#if (FEATURE_CONTROLLER == CONTROLLER_SMARTRAMPS) || (FEATURE_CONTROLLER == CONTROLLER_GADGETS3D_SHIELD) || (FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD)
+#if (FEATURE_CONTROLLER == CONTROLLER_SMARTRAMPS) || (FEATURE_CONTROLLER == CONTROLLER_GADGETS3D_SHIELD) || (FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD) || (FEATURE_CONTROLLER == CONTROLLER_ALLIGATOR_GLCD)
 #define UI_HAS_KEYS 1
 #define UI_HAS_BACK_KEY 0
-#if FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD
+#if FEATURE_CONTROLLER == CONTROLLER_REPRAPDISCOUNT_GLCD || FEATURE_CONTROLLER == CONTROLLER_ALLIGATOR_GLCD
 #define UI_DISPLAY_TYPE DISPLAY_U8G
 #define U8GLIB_ST7920
 #define UI_LCD_WIDTH 128
@@ -536,6 +539,23 @@ void uiCheckSlowKeys(int &action) {}
 #define UI_ENCODER_B           11
 #define UI_ENCODER_CLICK       43
 #define UI_RESET_PIN           46
+#elif MOTHERBOARD==501
+#define BEEPER_PIN             64
+#define UI_DISPLAY_RS_PIN      19
+#define UI_DISPLAY_RW_PIN      -1
+#define UI_DISPLAY_ENABLE_PIN  18
+#define UI_DISPLAY_D0_PIN      -1
+#define UI_DISPLAY_D1_PIN      -1
+#define UI_DISPLAY_D2_PIN      -1
+#define UI_DISPLAY_D3_PIN      -1
+#define UI_DISPLAY_D4_PIN      17
+#define UI_DISPLAY_D5_PIN      -1
+#define UI_DISPLAY_D6_PIN      -1
+#define UI_DISPLAY_D7_PIN      -1
+#define UI_ENCODER_A           16
+#define UI_ENCODER_B           14
+#define UI_ENCODER_CLICK       15
+#define UI_RESET_PIN           -1
 #else
 #define BEEPER_PIN             37
 #define UI_DISPLAY_RS_PIN      16
@@ -561,12 +581,16 @@ void uiCheckSlowKeys(int &action) {}
 void uiInitKeys() {
   UI_KEYS_INIT_CLICKENCODER_LOW(UI_ENCODER_A,UI_ENCODER_B); // click encoder on pins 47 and 45. Phase is connected with gnd for signals.
   UI_KEYS_INIT_BUTTON_LOW(UI_ENCODER_CLICK); // push button, connects gnd to pin
+#if UI_RESET_PIN > -1
   UI_KEYS_INIT_BUTTON_LOW(UI_RESET_PIN); // Kill pin
+#endif
 }
 void uiCheckKeys(int &action) {
  UI_KEYS_CLICKENCODER_LOW_REV(UI_ENCODER_A,UI_ENCODER_B); // click encoder on pins 47 and 45. Phase is connected with gnd for signals.
  UI_KEYS_BUTTON_LOW(UI_ENCODER_CLICK,UI_ACTION_OK); // push button, connects gnd to pin
+ #if UI_RESET_PIN > -1
  UI_KEYS_BUTTON_LOW(UI_RESET_PIN,UI_ACTION_RESET);
+ #endif
 }
 inline void uiCheckSlowEncoder() {}
 void uiCheckSlowKeys(int &action) {}

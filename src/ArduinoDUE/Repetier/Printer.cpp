@@ -546,8 +546,18 @@ void Printer::setup()
     HAL::stopWatchdog();
 #if FEATURE_CONTROLLER == CONTROLLER_VIKI
     HAL::delayMilliseconds(100);
+#elif FEATURE_CONTROLLER!=NO_CONTROLLER && MOTHERBOARD==501 && EXP_VOLTAGE_LEVEL_PIN >-1
+    SET_OUTPUT(EXP_VOLTAGE_LEVEL_PIN);
+#if UI_VOLTAGE_LEVEL==0
+    WRITE(EXP_VOLTAGE_LEVEL_PIN,LOW);
+#else
+    WRITE(EXP_VOLTAGE_LEVEL_PIN,HIGH);
+#endif
 #endif // FEATURE_CONTROLLER
     //HAL::delayMilliseconds(500);  // add a delay at startup to give hardware time for initalization
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+    HAL::spiBegin();
+#endif
     HAL::hwSetup();
 #ifdef ANALYZER
 // Channel->pin assignments
@@ -600,6 +610,12 @@ void Printer::setup()
 #endif
 #endif
 
+    //Initialize Enable Pin
+#if (MOTHERBOARD==500) || (MOTHERBOARD==501)
+    SET_OUTPUT(ORIG_ENABLE_PIN);
+    WRITE( ORIG_ENABLE_PIN , LOW );
+#endif
+    
     //Initialize Step Pins
     SET_OUTPUT(X_STEP_PIN);
     SET_OUTPUT(Y_STEP_PIN);
@@ -789,6 +805,9 @@ void Printer::setup()
 #endif
 
 #if STEPPER_CURRENT_CONTROL!=CURRENT_CONTROL_MANUAL
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+    ExternalDac::begin();
+#endif// MOTHERBOARD == 500 || MOTHERBOARD == 501
     motorCurrentControlInit(); // Set current if it is firmware controlled
 #endif
     microstepInit();
@@ -874,6 +893,10 @@ void Printer::setup()
 #if FEATURE_WATCHDOG
     HAL::startWatchdog();
 #endif // FEATURE_WATCHDOG
+    
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+    SET_OUTPUT(DAC_SYNC);
+#endif //MOTHERBOARD == 500 || MOTHERBOARD == 501
 }
 
 void Printer::defaultLoopActions()

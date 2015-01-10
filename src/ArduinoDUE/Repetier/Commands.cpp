@@ -338,6 +338,25 @@ void motorCurrentControlInit() //Initialize LTC2600 Motor Current
 }
 #endif
 
+#if STEPPER_CURRENT_CONTROL==CURRENT_CONTROL_DAC
+// DAC methods for controling current and microstepping
+void setMotorCurrent(uint8_t driver, unsigned int current)
+{
+    if(driver>=4)
+        return;
+    
+    ExternalDac::setValue(driver, current);
+}
+
+void motorCurrentControlInit() //Initialize Digipot Motor Current
+{
+    const uint8_t digipot_motor_current[] = MOTOR_CURRENT;
+    
+    for(int i=0; i<=4; i++)
+        setMotorCurrent(i,digipot_motor_current[i]);
+}
+#endif
+
 #if defined(X_MS1_PIN) && X_MS1_PIN > -1
 void microstepMS(uint8_t driver, int8_t ms1, int8_t ms2)
 {
@@ -359,6 +378,7 @@ void microstepMS(uint8_t driver, int8_t ms1, int8_t ms2)
             WRITE(E1_MS1_PIN,ms1);
             break;
         }
+#if MOTHERBOARD != 501
     if(ms2 > -1) switch(driver)
         {
         case 0:
@@ -377,6 +397,7 @@ void microstepMS(uint8_t driver, int8_t ms1, int8_t ms2)
             WRITE(E1_MS2_PIN,ms2);
             break;
         }
+#endif
 }
 
 void microstepMode(uint8_t driver, uint8_t stepping_mode)
@@ -398,10 +419,23 @@ void microstepMode(uint8_t driver, uint8_t stepping_mode)
     case 16:
         microstepMS(driver,MICROSTEP16);
         break;
+#if MOTHERBOARD == 501
+    case 32:
+        microstepMS(driver,MICROSTEP32);
+        break;
+#endif
     }
 }
 void microstepReadings()
 {
+#if (MOTHERBOARD == 501)
+    Com::printFLN(Com::tMS1MS2Pins);
+    Com::printF(Com::tXColon,READ(X_MS1_PIN));
+    Com::printF(Com::tYColon,READ(Y_MS1_PIN));
+    Com::printF(Com::tZColon,READ(Z_MS1_PIN));
+    Com::printFLN(Com::tE0Colon,READ(E0_MS1_PIN));
+    //Com::printFLN(Com::tE1Colon,READ(E1_MS1_PIN));
+#else
     Com::printFLN(Com::tMS1MS2Pins);
     Com::printF(Com::tXColon,READ(X_MS1_PIN));
     Com::printFLN(Com::tComma,READ(X_MS2_PIN));
@@ -413,12 +447,22 @@ void microstepReadings()
     Com::printFLN(Com::tComma,READ(E0_MS2_PIN));
     Com::printF(Com::tE1Colon,READ(E1_MS1_PIN));
     Com::printFLN(Com::tComma,READ(E1_MS2_PIN));
+#endif //(MOTHERBOARD == 501)
 }
 #endif
 
 void microstepInit()
 {
-#if defined(X_MS1_PIN) && X_MS1_PIN > -1
+#if MOTHERBOARD == 501 && X_MS1_PIN > -1
+    const uint8_t microstep_modes[] = MICROSTEP_MODES;
+    SET_OUTPUT(X_MS1_PIN);
+    SET_OUTPUT(Y_MS1_PIN);
+    SET_OUTPUT(Z_MS1_PIN);
+    SET_OUTPUT(E0_MS1_PIN);
+    //SET_OUTPUT(E1_MS1_PIN);
+    for(int i=0; i<=3; i++) microstepMode(i,microstep_modes[i]);
+    
+#elif defined(X_MS1_PIN) && X_MS1_PIN > -1
     const uint8_t microstep_modes[] = MICROSTEP_MODES;
     SET_OUTPUT(X_MS2_PIN);
     SET_OUTPUT(Y_MS2_PIN);
@@ -1605,14 +1649,18 @@ void Commands::processMCode(GCode *com)
     {
         OUT_P_LN("Set Microstepping");
 #if defined(X_MS1_PIN) && X_MS1_PIN > -1
+#if (MOTHERBOARD == 501)
+        if(com->hasS()) for(int i=0; i<=3; i++) microstepMode(i,com->S);
+#else
         if(com->hasS()) for(int i=0; i<=4; i++) microstepMode(i,com->S);
+#endif
         if(com->hasX()) microstepMode(0,(uint8_t)com->X);
         if(com->hasY()) microstepMode(1,(uint8_t)com->Y);
         if(com->hasZ()) microstepMode(2,(uint8_t)com->Z);
         if(com->hasE()) microstepMode(3,(uint8_t)com->E);
         if(com->hasP()) microstepMode(4,com->P); // Original B but is not supported here
         microstepReadings();
-#endif
+#endif        
     }
     break;
     case 400: // M400 Finish all moves

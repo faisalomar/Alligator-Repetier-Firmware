@@ -456,7 +456,50 @@ public:
     // Write any data type to EEPROM
     static inline void eprBurnValue(unsigned int pos, int size, union eeval_t newvalue) 
     {
-        i2cStartAddr(EEPROM_SERIAL_ADDR << 1 | I2C_WRITE, pos);        
+#if MOTHERBOARD==500 || MOTHERBOARD==501
+        uint8_t eeprom_temp[3];
+        
+        /*write enable*/
+        eeprom_temp[0] = 6;//WREN
+        WRITE(SPI_EEPROM1_CS,LOW);
+        spiSend(SPI_CHAN_EEPROM1 ,eeprom_temp , 1);
+        WRITE(SPI_EEPROM1_CS,HIGH);
+        delayMilliseconds(1);
+        
+        /*write addr*/
+        eeprom_temp[0] = 2;//WRITE
+        eeprom_temp[1] = ((pos>>8) & 0xFF);//addrH
+        eeprom_temp[2] = (pos& 0xFF);//addrL
+        WRITE(SPI_EEPROM1_CS ,LOW);
+        spiSend(SPI_CHAN_EEPROM1 ,eeprom_temp , 3);
+        
+        spiSend(SPI_CHAN_EEPROM1 ,&(newvalue.b[0]) , 1);
+        for (int i=1;i<size;i++) {
+            pos++;
+            // writes cannot cross page boundary
+            if ((pos % EEPROM_PAGE_SIZE) == 0) {
+                // burn current page then address next one
+                WRITE(SPI_EEPROM1_CS,HIGH);
+                delayMilliseconds(EEPROM_PAGE_WRITE_TIME);
+                
+                /*write enable*/
+                eeprom_temp[0] = 6;//WREN
+                WRITE(SPI_EEPROM1_CS,LOW);
+                spiSend(SPI_CHAN_EEPROM1 ,eeprom_temp , 1);
+                WRITE(SPI_EEPROM1_CS,HIGH);
+                
+                eeprom_temp[0] = 2;//WRITE
+                eeprom_temp[1] = ((pos>>8) & 0xFF);//addrH
+                eeprom_temp[2] = (pos& 0xFF);//addrL
+                WRITE(SPI_EEPROM1_CS,LOW);
+                spiSend(SPI_CHAN_EEPROM1 ,eeprom_temp , 3);
+            }
+            spiSend(SPI_CHAN_EEPROM1 ,&(newvalue.b[i]) , 1);
+        }
+        WRITE(SPI_EEPROM1_CS,HIGH);
+        delayMilliseconds(EEPROM_PAGE_WRITE_TIME);   // wait for page write to complete
+#else
+        i2cStartAddr(EEPROM_SERIAL_ADDR << 1 | I2C_WRITE, pos);
         i2cWriting(newvalue.b[0]);        // write first byte
         for (int i=1;i<size;i++) {
             pos++;
@@ -473,11 +516,33 @@ public:
         }
         i2cStop();          // signal end of transaction
         delayMilliseconds(EEPROM_PAGE_WRITE_TIME);   // wait for page write to complete
+#endif//(MOTHERBOARD==500) || (MOTHERBOARD==501)
     }
 
     // Read any data type from EEPROM that was previously written by eprBurnValue
     static inline union eeval_t eprGetValue(unsigned int pos, int size)
     {
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+        int i = 0;
+        eeval_t v;
+        uint8_t eeprom_temp[3];
+        size--;
+        eeprom_temp[0] = 3;//READ
+        eeprom_temp[1] = ((pos>>8) & 0xFF);//addrH
+        eeprom_temp[2] = (pos& 0xFF);//addrL
+        WRITE(SPI_EEPROM1_CS,HIGH);
+        WRITE(SPI_EEPROM1_CS,LOW);
+        spiSend(SPI_CHAN_EEPROM1 ,eeprom_temp , 3);
+        for (i=0;i<size;i++) {
+            // read an incomming byte
+            v.b[i] = spiReceive(SPI_CHAN_EEPROM1);
+        }
+        // read last byte
+        v.b[i] = spiReceive(SPI_CHAN_EEPROM1);
+        WRITE(SPI_EEPROM1_CS,HIGH);
+        return v;
+#else
+
         int i;
         eeval_t v;
 
@@ -493,6 +558,7 @@ public:
         // read last byte 
         v.b[i] = i2cReadNak();
         return v;
+#endif // MOTHERBOARD == 500 || MOTHERBOARD == 501
     }
 
     static inline void allowInterrupts()
@@ -613,6 +679,7 @@ public:
    }
    
    inline __attribute__((always_inline))
+   
    static void spiSendBlock(uint8_t token, const uint8_t* buf)
    {
        uint8_t response;
@@ -633,13 +700,18 @@ public:
    static void spiBegin();
    // spiClock is 0 to 6, relecting AVR clock dividers 2,4,8,16,32,64,128
    // Due can only go as slow as AVR divider 32 -- slowest Due clock is 329,412 Hz
-    static void spiInit(uint8_t spiClock);
-    // Write single byte to SPI
-    static void spiSend(byte b);
+   static void spiInit(uint8_t spiClock);
+   // Write single byte to SPI
+   static void spiSend(byte b);
    static void spiSend(const uint8_t* buf , size_t n);
-    // Read single byte from SPI
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+   static void spiSend(uint32_t chan ,const uint8_t* buf , size_t n);
+   static void spiSend(uint32_t chan, byte b);
+   static uint8_t spiReceive(uint32_t chan);
+#endif
+   // Read single byte from SPI
    static uint8_t spiReceive();
-    // Read from SPI into buffer
+   // Read from SPI into buffer
    static void spiReadBlock(uint8_t*buf,uint16_t nbyte);
 
     // Write from buffer to SPI

@@ -119,13 +119,6 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 #define ANALOG_REF_INT_2_56 _BV(REFS0) | _BV(REFS1)
 #define ANALOG_REF ANALOG_REF_AVCC
 
-// MS1 MS2 Stepper Driver Microstepping mode table
-#define MICROSTEP1 LOW,LOW
-#define MICROSTEP2 HIGH,LOW
-#define MICROSTEP4 LOW,HIGH
-#define MICROSTEP8 HIGH,HIGH
-#define MICROSTEP16 HIGH,HIGH
-
 #define HOME_ORDER_XYZ 1
 #define HOME_ORDER_XZY 2
 #define HOME_ORDER_YXZ 3
@@ -151,6 +144,7 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 #define CONTROLLER_SANGUINOLOLU_PANELOLU2 15
 #define CONTROLLER_GAMEDUINO2 16
 #define CONTROLLER_MIREGLI 17
+#define CONTROLLER_ALLIGATOR_GLCD 18
 
 //direction flags
 #define X_DIRPOS 1
@@ -177,6 +171,18 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 
 
 #include "Configuration.h"
+
+// MS1 MS2 Stepper Driver Microstepping mode table
+#define MICROSTEP1 LOW,LOW
+#define MICROSTEP2 HIGH,LOW
+#define MICROSTEP4 LOW,HIGH
+#define MICROSTEP8 HIGH,HIGH
+#if MOTHERBOARD == 501
+#define MICROSTEP16 LOW,LOW
+#define MICROSTEP32 HIGH,HIGH
+#else
+#define MICROSTEP16 HIGH,HIGH
+#endif
 
 #ifndef FEATURE_BABYSTEPPING
 #define FEATURE_BABYSTEPPING 0
@@ -578,6 +584,10 @@ extern int debugWaitLoop;
 #define SQRT(x) ( HAL::integerSqrt(x) )
 #else
 #define SQRT(x) sqrt(x)
+#endif
+
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+#include "ExternalDac.h"
 #endif
 
 #endif

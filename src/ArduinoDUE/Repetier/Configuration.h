@@ -57,8 +57,10 @@ setpe per mm and heater manager settings in extruder 0 are used! */
 // Arduino Due with RADDS     = 402
 // Arduino Due with RAMPS-FD  = 403
 // Arduino Due with RAMPS-FD V2 = 404
+// Alligator Board rev1 = 500
+// Alligator Board rev2 = 501
 
-#define MOTHERBOARD 402
+#define MOTHERBOARD 501
 
 #include "pins.h"
 
@@ -724,6 +726,8 @@ on this endstop.
 #define MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 #elif MOTHERBOARD==12
 #define MOTOR_CURRENT {35713,35713,35713,35713,35713} // Values 0-65535 (3D Master 35713 = ~1A)
+#elif MOTHERBOARD==500 || MOTHERBOARD==501
+#define MOTOR_CURRENT {140,140,140,110,110} // Values 0-255 (Alligator 255 = ~2.5A, value= (256/3.3)*current )
 #endif
 
 /** \brief Number of segments to generate for delta conversions per second of move
@@ -1268,8 +1272,17 @@ The following settings override uiconfig.h!
 13 or CONTROLLER_RAMBO = SeeMeCNC Display on Rambo (ORION)
 14 or CONTROLLER_OPENHARDWARE_LCD2004 = OpenHardware.co.za LCD2004 V2014
 15 or CONTROLLER_SANGUINOLOLU_PANELOLU2 = Sanguinololu + Panelolu2
+18 or CONTROLLER_ALLIGATOR_GLCD = Alligator Board Full Graphic Controller on Expansion Connector
 */
-#define FEATURE_CONTROLLER CONTROLLER_RADDS
+#define FEATURE_CONTROLLER NO_CONTROLLER
+
+/** Display Voltage Logic Selector
+ 0 = Voltage level 3.3V
+ 1 = Voltage level 5V
+ */
+#if MOTHERBOARD==501
+#define UI_VOLTAGE_LEVEL 1
+#endif
 
 /**
 Select the language to use.
