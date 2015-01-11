@@ -610,10 +610,13 @@ void Printer::setup()
 #endif
 #endif
 
-    //Initialize Enable Pin
-#if (MOTHERBOARD==500) || (MOTHERBOARD==501)
+    //Initialize Enable Pin and motor FAULT
+#if MOTHERBOARD==500 || MOTHERBOARD==501
+    //enable pin
     SET_OUTPUT(ORIG_ENABLE_PIN);
     WRITE( ORIG_ENABLE_PIN , LOW );
+    //motor FAULT
+    SET_INPUT(MOTOR_FAULT_PIN);
 #endif
     
     //Initialize Step Pins
@@ -920,6 +923,10 @@ void Printer::defaultLoopActions()
     }
 #if SDCARDDETECT>-1 && SDSUPPORT
     sd.automount();
+#endif
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+    if( READ(MOTOR_FAULT_PIN) == LOW )
+        Com::printWarningFLN(PSTR("motor FAULT detected !"));
 #endif
     DEBUG_MEMORY;
 }

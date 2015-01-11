@@ -172,6 +172,8 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_E3_ENABLE_PIN  -1
 //#define E3_MS_PIN         -1
 
+#define MOTOR_FAULT_PIN 22 // PB26 , motor X-Y-Z-E0 motor FAULT
+
 #define SDSUPPORT      true
 #define SDPOWER 	   -1
 #define SDSS		    77 // PA28
@@ -263,6 +265,8 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_Z_MIN_PIN      39 // PC7
 #define ORIG_Z_MAX_PIN      38 // PC6
 #define ORIG_Z_ENABLE_PIN   24//24 // PA15, motor RESET pin
+
+#define MOTOR_FAULT_PIN 22 // PB26 , motor X-Y-Z-E0 motor FAULT 
 
 // Note that on the Due pin A0 on the board is channel 2 on the ARM chip
 #define HEATER_0_PIN     68 // PA1
