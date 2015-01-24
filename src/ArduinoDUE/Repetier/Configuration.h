@@ -180,7 +180,7 @@ Overridden if EEPROM activated.*/
 #define EXT0_X_OFFSET 0
 #define EXT0_Y_OFFSET 0
 // for skeinforge 40 and later, steps to pull the plasic 1 mm inside the extruder, not out.  Overridden if EEPROM activated.
-#define EXT0_STEPS_PER_MM 106 //425 // 825.698 //457 
+#define EXT0_STEPS_PER_MM 106 //425 // 825.698 //457
 // What type of sensor is used?
 // 1 is 100k thermistor (Epcos B57560G0107F000 - RepRap-Fab.org and many other)
 // 2 is 200k thermistor
@@ -403,6 +403,37 @@ cog. Direct drive extruder need 0. */
 M140 command, after a given temperature is reached. */
 #define RETRACT_DURING_HEATUP true
 
+/** Allow retraction with G10/G11 removing requirement for retraction setting in slicer. Also allows filament change if lcd is configured. */
+#define FEATURE_RETRACTION 1
+/** autoretract converts pure extrusion moves into retractions. Beware that
+ simple extrusion e.g. over Repetier-Host will then not work! */
+#define AUTORETRACT_ENABLED 0
+#define RETRACTION_LENGTH 3
+#define RETRACTION_LONG_LENGTH 13
+#define RETRACTION_SPEED 40
+#define RETRACTION_Z_LIFT 0
+#define RETRACTION_UNDO_EXTRA_LENGTH 0
+#define RETRACTION_UNDO_EXTRA_LONG_LENGTH 0
+#define RETRACTION_UNDO_SPEED 20
+
+/**
+ If you have a lcd display, you can do a filament switch with M600.
+ It will change the current extruders filament and temperature must already be high enough.
+ */
+#define FILAMENTCHANGE_X_POS 0
+#define FILAMENTCHANGE_Y_POS 0
+#define FILAMENTCHANGE_Z_ADD 1
+/** Does a homing procedure after a filament change. This is good in case
+ you moved the extruder while changing filament during print.
+ 0 = no homing, 1 = xy homing, 2 = xyz homing
+ */
+#define FILAMENTCHANGE_REHOME 1
+/** Will first retract short distance, go to change position and then retract longretract.
+ Retractions speeds are taken from RETRACTION_SPEED and RETRACTION_UNDO_SPEED
+ */
+#define FILAMENTCHANGE_SHORTRETRACT 30
+#define FILAMENTCHANGE_LONGRETRACT 30
+
 /** PID control only works target temperature +/- PID_CONTROL_RANGE.
 If you get much overshoot at the first temperature set, because the heater is going full power too long, you
 need to increase this value. For one 6.8 Ohm heater 10 is ok. With two 6.8 Ohm heater use 15.
@@ -533,7 +564,7 @@ See http://reprap.org/wiki/MeasuringThermistorBeta for more details.
 #define GENERIC_THERM3_R2 4700
 
 /** Supply voltage to ADC, can be changed by setting ANALOG_REF below to different value. */
-#define GENERIC_THERM_VREF 5
+#define GENERIC_THERM_VREF 3.3
 /** Number of entries in generated table. One entry takes 4 bytes. Higher number of entries increase computation time too.
 Value is used for all generic tables created. */
 #define GENERIC_THERM_NUM_ENTRIES 33
@@ -719,7 +750,7 @@ on this endstop.
 // ##########################################################################################
 
 // Microstep setting (Only functional when stepper driver microstep pins are connected to MCU. Currently only works for RAMBO boards
-#define MICROSTEP_MODES {8,8,8,8,8} // [1,2,4,8,16]
+#define MICROSTEP_MODES {16,16,16,16,16} // [1,2,4,8,16]
 
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
 #if MOTHERBOARD==301
@@ -727,7 +758,7 @@ on this endstop.
 #elif MOTHERBOARD==12
 #define MOTOR_CURRENT {35713,35713,35713,35713,35713} // Values 0-65535 (3D Master 35713 = ~1A)
 #elif MOTHERBOARD==500 || MOTHERBOARD==501
-#define MOTOR_CURRENT {140,140,140,110,110} // Values 0-255 (Alligator 255 = ~2.5A, value= (256/3.3)*current )
+#define MOTOR_CURRENT {100,100,100,110,110} // Values 0-255 (Alligator 255 = ~2.5A, value= (256/3.3)*current )
 #endif
 
 /** \brief Number of segments to generate for delta conversions per second of move
@@ -801,6 +832,8 @@ on this endstop.
 */
 #define PRINTER_RADIUS 265.25
 
+
+
 /* ========== END Delta calibation data ==============*/
 
 /** When true the delta will home to z max when reset/powered over cord. That way you start with well defined coordinates.
@@ -856,7 +889,7 @@ Mega. Used only for nonlinear systems like delta or tuga. */
 /** Home position speed in mm/s. Overridden if EEPROM activated. */
 #define HOMING_FEEDRATE_X 80
 #define HOMING_FEEDRATE_Y 80
-#define HOMING_FEEDRATE_Z 3
+#define HOMING_FEEDRATE_Z 80
 
 /** Set order of axis homing. Use HOME_ORDER_XYZ and replace XYZ with your order. */
 #define HOMING_ORDER HOME_ORDER_ZXY
@@ -1124,6 +1157,11 @@ IMPORTANT: The ARM processors need a special board definition to work properly.
 See: AdditionalArduinoFiles: README.txt on how to install them. 
 */
 #define FEATURE_WATCHDOG 1
+
+/* LED Indicator and LED Light */
+#define FEATURE_LED_RG true
+
+#define FEATURE_HEAT_STOP_INT true
 
 /* Z-Probing */
 

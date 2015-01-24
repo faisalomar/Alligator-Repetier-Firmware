@@ -142,7 +142,7 @@ void HAL::setupTimer() {
 
 
 
-#if ANALOG_INPUTS>0
+#if ANALOG_INPUTS > 0
 // Initialize ADC channels
 void HAL::analogStart(void)
 {

@@ -137,6 +137,8 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_Z_ENABLE_PIN   24 // PA15, motor RESET pin
 #define Z_MS1_PIN           44 // PC19
 
+#define MOTOR_FAULT_PIN 22 // PB26 , motor X-Y-Z-E0 motor FAULT 
+
 // Note that on the Due pin A0 on the board is channel 2 on the ARM chip
 #define HEATER_0_PIN     68 // PA1
 #define TEMP_0_PIN       6  // PA24, analog pin
@@ -172,8 +174,6 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_E3_ENABLE_PIN  -1
 //#define E3_MS_PIN         -1
 
-#define MOTOR_FAULT_PIN 22 // PB26 , motor X-Y-Z-E0 motor FAULT
-
 #define SDSUPPORT      true
 #define SDPOWER 	   -1
 #define SDSS		    77 // PA28
@@ -186,6 +186,10 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_PS_ON_PIN          -1
 #define KILL_PIN           -1
 #define SUICIDE_PIN        -1 //PIN that has to be turned on right after start, to keep power flowing.
+
+#define LED_RED_PIN   40 // PC8
+#define LED_GREEN_PIN  41 // PC9
+#define CASE_LIGHTS_PIN 36 // PC4
 
 #define SDA_PIN 	-1  // i2c not used
 #define SCL_PIN 	-1  // i2c not used
@@ -310,6 +314,10 @@ STEPPER_CURRENT_CONTROL
 #define ORIG_PS_ON_PIN          -1
 #define KILL_PIN	   ORIG_X_MIN_PIN
 #define SUICIDE_PIN    -1 //PIN that has to be turned on right after start, to keep power flowing.
+
+#define LED_RED_PIN  36 // PC4
+#define LED_GREEN_PIN 40 // PC8
+#define CASE_LIGHTS_PIN 41 // PC9
 
 #define SDA_PIN 	-1  // i2c not used
 #define SCL_PIN 	-1  // i2c not used

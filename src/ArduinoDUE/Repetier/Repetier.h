@@ -22,7 +22,7 @@
 #ifndef _REPETIER_H
 #define _REPETIER_H
 
-#define REPETIER_VERSION "0.92"
+#define REPETIER_VERSION "0.92.2"
 
 // ##########################################################################################
 // ##                                  Debug configuration                                 ##
@@ -32,7 +32,7 @@ enum debugFlags {DEB_ECHO= 0x1, DEB_INFO=0x2, DEB_ERROR =0x4,DEB_DRYRUN=0x8,
                  DEB_COMMUNICATION=0x10, DEB_NOMOVES=0x20, DEB_DEBUG=0x40};
 
 /** Uncomment, to see detailed data for every move. Only for debugging purposes! */
-#define DEBUG_QUEUE_MOVE
+//#define DEBUG_QUEUE_MOVE
 /** Allows M111 to set bit 5 (16) which disables all commands except M111. This can be used
 to test your data througput or search for communication problems. */
 #define INCLUDE_DEBUG_COMMUNICATION 1
@@ -70,6 +70,8 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 #define BIPOD 5
 #define XZ_GANTRY 8
 #define ZX_GANTRY 9
+
+#define WIZARD_STACK_SIZE 8
 
 // Uncomment if no analyzer is connected
 //#define ANALYZER
@@ -112,7 +114,11 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 // Bits of the ADC converter
 #define ANALOG_INPUT_BITS 10
 // Build median from 2^ANALOG_INPUT_SAMPLE samples
+#if CPU_ARCH == ARCH_AVR
 #define ANALOG_INPUT_SAMPLE 5
+#else
+#define ANALOG_INPUT_SAMPLE 4
+#endif
 #define ANALOG_REF_AREF 0
 #define ANALOG_REF_AVCC _BV(REFS0)
 #define ANALOG_REF_INT_1_1 _BV(REFS1)
@@ -171,6 +177,20 @@ usage or for seraching for memory induced errors. Switch it off for production, 
 
 
 #include "Configuration.h"
+
+#define GCODE_BUFFER_SIZE 1
+
+// MS1 MS2 Stepper Driver Microstepping mode table
+#define MICROSTEP1 LOW,LOW
+#define MICROSTEP2 HIGH,LOW
+#define MICROSTEP4 LOW,HIGH
+#define MICROSTEP8 HIGH,HIGH
+#if MOTHERBOARD == 501
+#define MICROSTEP16 LOW,LOW
+#define MICROSTEP32 HIGH,HIGH
+#else
+#define MICROSTEP16 HIGH,HIGH
+#endif
 
 // MS1 MS2 Stepper Driver Microstepping mode table
 #define MICROSTEP1 LOW,LOW
