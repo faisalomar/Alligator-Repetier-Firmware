@@ -1,9 +1,5 @@
 # Repetier-Firmware - the fast and user friendly firmware
 
-## Alligator Board Support
-3D Artists Team porting of Repetier allows it to run on the Alligator Board, supporting all its features
-
-
 ## Installation
 
 Please use your new at [http://www.repetier.com/firmware/v092](http://www.repetier.com/firmware/v092)
